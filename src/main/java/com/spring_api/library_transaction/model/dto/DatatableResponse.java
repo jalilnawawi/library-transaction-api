@@ -25,5 +25,5 @@ public class DatatableResponse<T> {
 
     @JsonProperty("trace_id")
     private String traceId;
-    private T data;
+    private PageDataResponse<T> data;
 }
