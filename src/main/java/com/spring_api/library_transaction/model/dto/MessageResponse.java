@@ -15,6 +15,7 @@ public final class MessageResponse {
     public static final String BOOK_ALREADY_EXISTS = "Book already exists.";
     public static final String BOOK_NOT_FOUND = "Book not found.";
     public static final String BOOK_OUT_OF_STOCK = "Book is out of stock.";
+    public static final String BOOK_STOCK_STOCK_AT_LEAST_ONE = "Book stock must be at least 1.";
 
     public static final String TRANSACTION_CREATED_SUCCESSFULLY = "Transaction created successfully.";
     public static final String TRANSACTION_UPDATED_SUCCESSFULLY = "Transaction updated successfully.";

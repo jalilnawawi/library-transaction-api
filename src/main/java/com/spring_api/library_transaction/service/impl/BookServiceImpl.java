@@ -34,6 +34,18 @@ public class BookServiceImpl implements BookService {
             books.setTitle(request.getTitle());
             books.setAuthor(request.getAuthor());
             books.setPublishedYear(request.getPublishedYear());
+
+            if (request.getStock() <= 0) {
+                return new DataResponse<>(
+                    BOOK_STOCK_STOCK_AT_LEAST_ONE,
+                    LocalDateTime.now(),
+                    HttpStatus.BAD_REQUEST.value(),
+                    ZYD_ERROR_BOOK_CREATION_FAILED,
+                    UUID.randomUUID().toString(),
+                    null
+                );
+            }
+
             books.setStock(request.getStock());
             Books savedBook = booksRepository.save(books);
 
