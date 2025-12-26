@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  springboot-app:
+    image: jalilnawawi/library-transactions-api:latest
+    container_name: library-transactions-api
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-muddy-term-a1rho8ml-pooler.ap-southeast-1.aws.neon.tech/library_db?user=neondb_owner&password=npg_Bv7jqWanmOI4&sslmode=require&channelBinding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner
+      - SPRING_DATASOURCE_PASSWORD=npg_Bv7jqWanmOI4
+    restart: unless-stopped
