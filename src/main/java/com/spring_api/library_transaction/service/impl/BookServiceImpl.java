@@ -163,7 +163,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public DataResponse<BookResponse> updateBookStock(Long bookId, int newStock) {
+    public DataResponse<BookResponse> updateBookStock(Long bookId, int additionalStock) {
         try {
             Optional<Books> book = booksRepository.findById(bookId);
             if (book.isEmpty()) {
@@ -177,7 +177,10 @@ public class BookServiceImpl implements BookService {
                 );
             } else {
                 Books existingBook = book.get();
-                existingBook.setStock(newStock);
+                int currentStock = existingBook.getStock();
+
+                // Update stock by adding stock to currentStock
+                existingBook.setStock(currentStock + additionalStock);
                 Books updatedBook = booksRepository.save(existingBook);
 
                 BookResponse response = BookResponse.toResponse(updatedBook);

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/books")
 public class BookController {
     @Autowired
-    BookService bookService;
+    private BookService bookService;
 
     @PostMapping
     public ResponseEntity<DataResponse<BookResponse>> createBook(@RequestBody CreateBookRequest request){
@@ -25,9 +25,7 @@ public class BookController {
     @GetMapping
     public ResponseEntity<DatatableResponse<BookResponse>> getAllBooks(
         @RequestParam(value = "page", defaultValue = "1")  int page,
-        @RequestParam(value = "limit", defaultValue = "10") int limit,
-        @RequestParam(value = "sortField", defaultValue = "id") String sortField,
-        @RequestParam(value = "sortOrder", defaultValue = "asc") String sortOrder
+        @RequestParam(value = "limit", defaultValue = "10") int limit
     ){
         DatatableResponse<BookResponse> response = bookService.getAllBooks(page, limit);
         return ResponseEntity.status(response.getStatusCode()).body(response);
@@ -42,9 +40,9 @@ public class BookController {
     @PutMapping("{bookId}/stock")
     public ResponseEntity<DataResponse<BookResponse>> updateBookStock(
         @PathVariable("bookId") Long bookId,
-        @RequestParam("newStock") int newStock
+        @RequestParam("additionalStock") int additionalStock
     ) {
-        DataResponse<BookResponse> response = bookService.updateBookStock(bookId, newStock);
+        DataResponse<BookResponse> response = bookService.updateBookStock(bookId, additionalStock);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
