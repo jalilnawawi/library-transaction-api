@@ -24,7 +24,7 @@ public class TransactionResponse {
                 transactions.getBook().getId(),
                 transactions.getBook().getTitle(),
                 transactions.getQuantity(),
-                transactions.getBorrowerName(),
+                transactions.getUser().getName(),
                 transactions.getCreatedAt().toString()
         );
     }

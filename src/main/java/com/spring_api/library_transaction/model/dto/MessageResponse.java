@@ -28,6 +28,9 @@ public final class MessageResponse {
     public static final String TRANSACTION_ALREADY_EXISTS = "Transaction already exists.";
     public static final String TRANSACTION_NOT_FOUND = "Transaction not found.";
 
+    public static final String USER_NOT_FOUND = "User not found.";
+    public static final String USER_BORROW_LIMIT_EXCEEDED = "User has exceeded the borrow limit.";
+
     public static final String EMPTY_DATA = "No data available.";
     public static final String MSG_INTERNAL_SERVER_ERROR = "Internal server error occurred.";
 
@@ -38,12 +41,17 @@ public final class MessageResponse {
     public static final String ZYD_ERROR_BOOK_RETRIEVAL_FAILED = "ZYD-ERR-005";
     public static final String ZYD_ERROR_BOOK_ALREADY_EXISTS = "ZYD-ERR-006";
     public static final String ZYD_ERROR_BOOK_OUT_OF_STOCK = "ZYD-ERR-007";
+
     public static final String ZYD_ERROR_TRANSACTION_NOT_FOUND = "ZYD-ERR-101";
     public static final String ZYD_ERROR_TRANSACTION_CREATION_FAILED = "ZYD-ERR-102";
     public static final String ZYD_ERROR_TRANSACTION_UPDATED = "ZYD-ERR-103";
     public static final String ZYD_ERROR_TRANSACTION_DELETED = "ZYD-ERR-104";
     public static final String ZYD_ERROR_TRANSACTION_RETRIEVAL_FAILED = "ZYD-ERR-105";
     public static final String ZYD_ERROR_TRANSACTION_ALREADY_EXISTS = "ZYD-ERR-106";
-    public static final String ZYD_ERROR_EMPTY_DATA = "ZYD-ERR-200";
+
+    public static final String ZYD_ERROR_USER_NOT_FOUND = "ZYD-ERR-201";
+    public static final String ZYD_ERROR_USER_BORROW_LIMIT_EXCEEDED = "ZYD-ERR-202";
+
+    public static final String ZYD_ERROR_EMPTY_DATA = "ZYD-ERR-404";
     public static final String ZYD_ERROR_INTERNAL_SERVER = "ZYD-ERR-500";
 }

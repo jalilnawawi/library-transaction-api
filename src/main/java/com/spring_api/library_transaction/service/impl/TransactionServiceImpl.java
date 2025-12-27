@@ -3,13 +3,15 @@ package com.spring_api.library_transaction.service.impl;
 import com.spring_api.library_transaction.model.dto.DataResponse;
 import com.spring_api.library_transaction.model.dto.DatatableResponse;
 import com.spring_api.library_transaction.model.dto.PageDataResponse;
-import com.spring_api.library_transaction.model.dto.book.response.BookResponse;
 import com.spring_api.library_transaction.model.dto.transaction.request.CreateTransactionRequest;
 import com.spring_api.library_transaction.model.dto.transaction.response.TransactionResponse;
 import com.spring_api.library_transaction.model.entity.Books;
 import com.spring_api.library_transaction.model.entity.Transactions;
+import com.spring_api.library_transaction.model.entity.Users;
+import com.spring_api.library_transaction.model.enums.TransactionStatus;
 import com.spring_api.library_transaction.repository.BooksRepository;
 import com.spring_api.library_transaction.repository.TransactionsRepository;
+import com.spring_api.library_transaction.repository.UserRepository;
 import com.spring_api.library_transaction.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +38,35 @@ public class TransactionServiceImpl implements TransactionService {
     @Autowired
     private BooksRepository booksRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     public DataResponse<TransactionResponse> createTransaction(CreateTransactionRequest request) {
         try {
+            Optional<Users> user = userRepository.findById(request.getUserId());
+            if (user.isEmpty()) {
+                return new DataResponse<>(
+                        USER_NOT_FOUND,
+                        LocalDateTime.now(),
+                        HttpStatus.NOT_FOUND.value(),
+                        ZYD_ERROR_USER_NOT_FOUND,
+                        UUID.randomUUID().toString(),
+                        null
+                );
+            }
+
+            if (user.get().getBorrowedBooksCount() <= 0) {
+                return new DataResponse<>(
+                        USER_BORROW_LIMIT_EXCEEDED,
+                        LocalDateTime.now(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        ZYD_ERROR_USER_BORROW_LIMIT_EXCEEDED,
+                        UUID.randomUUID().toString(),
+                        null
+                );
+            }
+
             Optional<Books> book = booksRepository.findById(request.getBookId());
             if (book.isEmpty()) {
                 return new DataResponse<>(
@@ -64,7 +92,8 @@ public class TransactionServiceImpl implements TransactionService {
                 Transactions transactions = new Transactions();
                 transactions.setBook(book.get());
                 transactions.setQuantity(request.getQuantity());
-                transactions.setBorrowerName(request.getBorrowerName());
+                transactions.setUser(user.get());
+                transactions.setStatus(TransactionStatus.OPEN);
 
                 Transactions savedTransaction = transactionsRepository.save(transactions);
                 TransactionResponse response = TransactionResponse.toResponse(savedTransaction);
@@ -72,6 +101,10 @@ public class TransactionServiceImpl implements TransactionService {
                 Books updateBookStock = book.get();
                 updateBookStock.setStock(updateBookStock.getStock() - request.getQuantity());
                 booksRepository.save(updateBookStock);
+
+                Users updateUserBorrowedCount = user.get();
+                updateUserBorrowedCount.setBorrowedBooksCount(updateUserBorrowedCount.getBorrowedBooksCount() - 1);
+                userRepository.save(updateUserBorrowedCount);
 
                 return new DataResponse<>(
                         TRANSACTION_CREATED_SUCCESSFULLY,
@@ -100,16 +133,6 @@ public class TransactionServiceImpl implements TransactionService {
     public DatatableResponse<TransactionResponse> getAllTransactions(int page, int limit) {
         try {
             List<Transactions> transactionsList = transactionsRepository.findAll();
-            if (transactionsList.isEmpty()) {
-                return new DatatableResponse<>(
-                        TRANSACTION_RETRIEVAL_FAILED,
-                        LocalDateTime.now(),
-                        HttpStatus.OK.value(),
-                        ZYD_ERROR_TRANSACTION_RETRIEVAL_FAILED,
-                        UUID.randomUUID().toString(),
-                        null
-                );
-            }
 
             List<TransactionResponse> transactionResponseList = transactionsList.stream()
                     .map(TransactionResponse::toResponse)
@@ -254,6 +277,55 @@ public class TransactionServiceImpl implements TransactionService {
 
         } catch (Exception e) {
             log.error("Error updating transaction quantity: {}", e.getMessage());
+            return new DataResponse<>(
+                    MSG_INTERNAL_SERVER_ERROR,
+                    LocalDateTime.now(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    ZYD_ERROR_INTERNAL_SERVER,
+                    UUID.randomUUID().toString(),
+                    null
+            );
+        }
+    }
+
+    @Override
+    public DataResponse<TransactionResponse> updateTransactionStatus(Long transactionId, String status) {
+        try {
+            Optional<Transactions> existingTransaction = transactionsRepository.findById(transactionId);
+            if (existingTransaction.isEmpty()) {
+                return new DataResponse<>(
+                        TRANSACTION_NOT_FOUND,
+                        LocalDateTime.now(),
+                        HttpStatus.NOT_FOUND.value(),
+                        ZYD_ERROR_TRANSACTION_NOT_FOUND,
+                        UUID.randomUUID().toString(),
+                        null
+                );
+            } else {
+                Transactions transactionToUpdate = existingTransaction.get();
+                if (status.equalsIgnoreCase("overdue")) {
+                    transactionToUpdate.setStatus(TransactionStatus.OVERDUE);
+                } else if (status.equalsIgnoreCase("closed")) {
+                    transactionToUpdate.setStatus(TransactionStatus.CLOSED);
+                } else {
+                    transactionToUpdate.setStatus(TransactionStatus.OPEN);
+                }
+
+                Transactions updatedTransaction = transactionsRepository.save(transactionToUpdate);
+                TransactionResponse response = TransactionResponse.toResponse(updatedTransaction);
+
+                return new DataResponse<>(
+                        TRANSACTION_UPDATED_SUCCESSFULLY,
+                        LocalDateTime.now(),
+                        HttpStatus.OK.value(),
+                        null,
+                        null,
+                        response
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("Error updating transaction status: {}", e.getMessage());
             return new DataResponse<>(
                     MSG_INTERNAL_SERVER_ERROR,
                     LocalDateTime.now(),

@@ -10,5 +10,6 @@ public interface TransactionService {
     DatatableResponse<TransactionResponse> getAllTransactions(int page, int limit);
     DataResponse<TransactionResponse> getTransactionById(Long transactionId);
     DataResponse<TransactionResponse> updateTransactionQuantity(Long transactionId, int newQuantity);
+    DataResponse<TransactionResponse> updateTransactionStatus(Long transactionId, String status);
     DataResponse<TransactionResponse> deleteTransactionById(Long transactionId);
 }

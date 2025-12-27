@@ -49,6 +49,15 @@ public class TransactionController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+    @PutMapping("{transactionId}/status")
+    public ResponseEntity<DataResponse<TransactionResponse>> updateTransactionStatus(
+            @PathVariable("transactionId") Long transactionId,
+            @RequestParam("status") String status
+    ) {
+        DataResponse<TransactionResponse> response = transactionService.updateTransactionStatus(transactionId, status);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
     @DeleteMapping("{transactionId}")
     public ResponseEntity<DataResponse<TransactionResponse>> deleteTransactionById(
             @PathVariable("transactionId") Long transactionId

@@ -1,5 +1,6 @@
 package com.spring_api.library_transaction.model.entity;
 
+import com.spring_api.library_transaction.model.enums.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,10 +23,15 @@ public class Transactions extends AuditingModel {
     @Column(name = "quantity", nullable = false)
     private int quantity = 1;
 
-    @Column(name = "borrower_name", nullable = false, length = 100)
-    private String borrowerName;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", referencedColumnName = "book_id", nullable = false)
     private Books book;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    private Users user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_status", nullable = false)
+    private TransactionStatus status;
 }
