@@ -1,6 +1,6 @@
 package com.spring_api.library_transaction.model.entity;
 
-import com.spring_api.library_transaction.model.enums.TransactionStatus;
+import com.spring_api.library_transaction.model.enums.BorrowStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,12 +12,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "transactions")
-public class Transactions extends AuditingModel {
+@Table(name = "borrows")
+public class Borrows extends AuditingModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "transaction_id")
+    @Column(name = "borrow_id")
     private Long id;
 
     @Column(name = "quantity", nullable = false)
@@ -32,6 +32,6 @@ public class Transactions extends AuditingModel {
     private Users user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "transaction_status", nullable = false)
-    private TransactionStatus status;
+    @Column(name = "borrow_status", nullable = false)
+    private BorrowStatus status;
 }

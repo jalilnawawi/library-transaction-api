@@ -1,6 +1,6 @@
 package com.spring_api.library_transaction.model.enums;
 
-public enum TransactionStatus {
+public enum BorrowStatus {
     OPEN,
     CLOSED,
     OVERDUE

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateTransactionRequest {
+public class CreateBorrowRequest {
     private Long userId;
     private Long bookId;
     private int quantity;

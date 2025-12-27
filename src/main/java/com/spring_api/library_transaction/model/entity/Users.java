@@ -36,5 +36,5 @@ public class Users {
     private int borrowedBooksCount = 3;
 
     @OneToMany(mappedBy = "user")
-    List<Transactions> transactions;
+    List<Borrows> transactions;
 }

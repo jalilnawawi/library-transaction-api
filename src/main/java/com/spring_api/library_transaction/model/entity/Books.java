@@ -33,5 +33,5 @@ public class Books extends AuditingModel {
     private int stock = 1;
 
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
-    private List<Transactions> transactionsList;
+    private List<Borrows> borrowsList;
 }

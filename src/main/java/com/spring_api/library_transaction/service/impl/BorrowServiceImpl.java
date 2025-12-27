@@ -3,16 +3,16 @@ package com.spring_api.library_transaction.service.impl;
 import com.spring_api.library_transaction.model.dto.DataResponse;
 import com.spring_api.library_transaction.model.dto.DatatableResponse;
 import com.spring_api.library_transaction.model.dto.PageDataResponse;
-import com.spring_api.library_transaction.model.dto.transaction.request.CreateTransactionRequest;
-import com.spring_api.library_transaction.model.dto.transaction.response.TransactionResponse;
+import com.spring_api.library_transaction.model.dto.transaction.request.CreateBorrowRequest;
+import com.spring_api.library_transaction.model.dto.transaction.response.BorrowResponse;
 import com.spring_api.library_transaction.model.entity.Books;
-import com.spring_api.library_transaction.model.entity.Transactions;
+import com.spring_api.library_transaction.model.entity.Borrows;
 import com.spring_api.library_transaction.model.entity.Users;
-import com.spring_api.library_transaction.model.enums.TransactionStatus;
+import com.spring_api.library_transaction.model.enums.BorrowStatus;
 import com.spring_api.library_transaction.repository.BooksRepository;
-import com.spring_api.library_transaction.repository.TransactionsRepository;
+import com.spring_api.library_transaction.repository.BorrowsRepository;
 import com.spring_api.library_transaction.repository.UserRepository;
-import com.spring_api.library_transaction.service.TransactionService;
+import com.spring_api.library_transaction.service.BorrowService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,9 +31,9 @@ import static com.spring_api.library_transaction.model.dto.MessageResponse.*;
 
 @Service
 @Slf4j
-public class TransactionServiceImpl implements TransactionService {
+public class BorrowServiceImpl implements BorrowService {
     @Autowired
-    private TransactionsRepository transactionsRepository;
+    private BorrowsRepository borrowsRepository;
 
     @Autowired
     private BooksRepository booksRepository;
@@ -42,7 +42,7 @@ public class TransactionServiceImpl implements TransactionService {
     private UserRepository userRepository;
 
     @Override
-    public DataResponse<TransactionResponse> createTransaction(CreateTransactionRequest request) {
+    public DataResponse<BorrowResponse> createBorrow(CreateBorrowRequest request) {
         try {
             Optional<Users> user = userRepository.findById(request.getUserId());
             if (user.isEmpty()) {
@@ -89,14 +89,14 @@ public class TransactionServiceImpl implements TransactionService {
                     );
                 }
 
-                Transactions transactions = new Transactions();
-                transactions.setBook(book.get());
-                transactions.setQuantity(request.getQuantity());
-                transactions.setUser(user.get());
-                transactions.setStatus(TransactionStatus.OPEN);
+                Borrows borrows = new Borrows();
+                borrows.setBook(book.get());
+                borrows.setQuantity(request.getQuantity());
+                borrows.setUser(user.get());
+                borrows.setStatus(BorrowStatus.OPEN);
 
-                Transactions savedTransaction = transactionsRepository.save(transactions);
-                TransactionResponse response = TransactionResponse.toResponse(savedTransaction);
+                Borrows savedBorrow = borrowsRepository.save(borrows);
+                BorrowResponse response = BorrowResponse.toResponse(savedBorrow);
 
                 Books updateBookStock = book.get();
                 updateBookStock.setStock(updateBookStock.getStock() - request.getQuantity());
@@ -117,7 +117,7 @@ public class TransactionServiceImpl implements TransactionService {
             }
 
         } catch (Exception e) {
-            log.error("Error creating transaction: {}", e.getMessage());
+            log.error("Error creating borrow: {}", e.getMessage());
             return new DataResponse<>(
                     MSG_INTERNAL_SERVER_ERROR,
                     LocalDateTime.now(),
@@ -130,30 +130,30 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public DatatableResponse<TransactionResponse> getAllTransactions(int page, int limit) {
+    public DatatableResponse<BorrowResponse> getAllBorrows(int page, int limit) {
         try {
-            List<Transactions> transactionsList = transactionsRepository.findAll();
+            List<Borrows> borrowsList = borrowsRepository.findAll();
 
-            List<TransactionResponse> transactionResponseList = transactionsList.stream()
-                    .map(TransactionResponse::toResponse)
+            List<BorrowResponse> borrowResponseList = borrowsList.stream()
+                    .map(BorrowResponse::toResponse)
                     .toList();
 
             Pageable pageable = PageRequest.of(page - 1, limit);
 
-            int total = transactionResponseList.size();
+            int total = borrowResponseList.size();
             int from = Math.min(pageable.getPageNumber() * pageable.getPageSize(), total);
             int to = Math.min(from + pageable.getPageSize(), total);
 
-            Page<TransactionResponse> transactionResponsePage = new PageImpl<>(
-                    transactionResponseList.subList(from, to), pageable, total
+            Page<BorrowResponse> borrowResponsePage = new PageImpl<>(
+                    borrowResponseList.subList(from, to), pageable, total
             );
 
-            PageDataResponse<TransactionResponse> pageDataResponse = new PageDataResponse<>(
+            PageDataResponse<BorrowResponse> pageDataResponse = new PageDataResponse<>(
                     page,
                     limit,
-                    (int) transactionResponsePage.getTotalElements(),
-                    transactionResponsePage.getTotalPages(),
-                    transactionResponsePage.getContent()
+                    (int) borrowResponsePage.getTotalElements(),
+                    borrowResponsePage.getTotalPages(),
+                    borrowResponsePage.getContent()
             );
 
             if (pageDataResponse.getTotal().equals(0)) {
@@ -178,7 +178,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 
         } catch (Exception e) {
-            log.error("Error retrieving transactions: {}", e.getMessage());
+            log.error("Error retrieving borrows: {}", e.getMessage());
             return new DatatableResponse<>(
                     MSG_INTERNAL_SERVER_ERROR,
                     LocalDateTime.now(),
@@ -191,10 +191,10 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public DataResponse<TransactionResponse> getTransactionById(Long transactionId) {
+    public DataResponse<BorrowResponse> getBorrowById(Long borrowId) {
         try {
-            Optional<Transactions> existingTransaction = transactionsRepository.findById(transactionId);
-            if (existingTransaction.isEmpty()) {
+            Optional<Borrows> existingBorrow = borrowsRepository.findById(borrowId);
+            if (existingBorrow.isEmpty()) {
                 return new DataResponse<>(
                         TRANSACTION_NOT_FOUND,
                         LocalDateTime.now(),
@@ -204,7 +204,7 @@ public class TransactionServiceImpl implements TransactionService {
                         null
                 );
             } else {
-                TransactionResponse response = TransactionResponse.toResponse(existingTransaction.get());
+                BorrowResponse response = BorrowResponse.toResponse(existingBorrow.get());
                 return new DataResponse<>(
                         TRANSACTION_SUCCESSFULLY_RETRIEVED,
                         LocalDateTime.now(),
@@ -216,7 +216,7 @@ public class TransactionServiceImpl implements TransactionService {
             }
 
         } catch (Exception e) {
-            log.error("Error retrieving transaction by ID: {}", e.getMessage());
+            log.error("Error retrieving borrow by ID: {}", e.getMessage());
             return new DataResponse<>(
                     MSG_INTERNAL_SERVER_ERROR,
                     LocalDateTime.now(),
@@ -229,10 +229,10 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public DataResponse<TransactionResponse> updateTransactionQuantity(Long transactionId, int newQuantity) {
+    public DataResponse<BorrowResponse> updateBorrowQuantity(Long borrowId, int newQuantity) {
         try {
-            Optional<Transactions> existingTransaction = transactionsRepository.findById(transactionId);
-            if (existingTransaction.isEmpty()) {
+            Optional<Borrows> existingBorrow = borrowsRepository.findById(borrowId);
+            if (existingBorrow.isEmpty()) {
                 return new DataResponse<>(
                         TRANSACTION_NOT_FOUND,
                         LocalDateTime.now(),
@@ -243,7 +243,7 @@ public class TransactionServiceImpl implements TransactionService {
                 );
             }
 
-            Optional<Books> book = booksRepository.findById(existingTransaction.get().getBook().getId());
+            Optional<Books> book = booksRepository.findById(existingBorrow.get().getBook().getId());
 
             // validasi stock buku, apabila pengurangan stock melebihi stock yang ada
             if (book.isPresent() && book.get().getStock() - newQuantity < 1) {
@@ -257,10 +257,10 @@ public class TransactionServiceImpl implements TransactionService {
                 );
             }
 
-            Transactions transactionToUpdate = existingTransaction.get();
-            transactionToUpdate.setQuantity(newQuantity);
-            Transactions updatedTransaction = transactionsRepository.save(transactionToUpdate);
-            TransactionResponse response = TransactionResponse.toResponse(updatedTransaction);
+            Borrows borrowToUpdate = existingBorrow.get();
+            borrowToUpdate.setQuantity(newQuantity);
+            Borrows updatedBorrow = borrowsRepository.save(borrowToUpdate);
+            BorrowResponse response = BorrowResponse.toResponse(updatedBorrow);
 
             Books updateBookStock = book.get();
             updateBookStock.setStock(updateBookStock.getStock() - newQuantity);
@@ -276,7 +276,7 @@ public class TransactionServiceImpl implements TransactionService {
             );
 
         } catch (Exception e) {
-            log.error("Error updating transaction quantity: {}", e.getMessage());
+            log.error("Error updating borrow quantity: {}", e.getMessage());
             return new DataResponse<>(
                     MSG_INTERNAL_SERVER_ERROR,
                     LocalDateTime.now(),
@@ -289,10 +289,10 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public DataResponse<TransactionResponse> updateTransactionStatus(Long transactionId, String status) {
+    public DataResponse<BorrowResponse> updateBorrowStatus(Long borrowId, String status) {
         try {
-            Optional<Transactions> existingTransaction = transactionsRepository.findById(transactionId);
-            if (existingTransaction.isEmpty()) {
+            Optional<Borrows> existingBorrow = borrowsRepository.findById(borrowId);
+            if (existingBorrow.isEmpty()) {
                 return new DataResponse<>(
                         TRANSACTION_NOT_FOUND,
                         LocalDateTime.now(),
@@ -302,17 +302,17 @@ public class TransactionServiceImpl implements TransactionService {
                         null
                 );
             } else {
-                Transactions transactionToUpdate = existingTransaction.get();
+                Borrows borrowToUpdate = existingBorrow.get();
                 if (status.equalsIgnoreCase("overdue")) {
-                    transactionToUpdate.setStatus(TransactionStatus.OVERDUE);
+                    borrowToUpdate.setStatus(BorrowStatus.OVERDUE);
                 } else if (status.equalsIgnoreCase("closed")) {
-                    transactionToUpdate.setStatus(TransactionStatus.CLOSED);
+                    borrowToUpdate.setStatus(BorrowStatus.CLOSED);
                 } else {
-                    transactionToUpdate.setStatus(TransactionStatus.OPEN);
+                    borrowToUpdate.setStatus(BorrowStatus.OPEN);
                 }
 
-                Transactions updatedTransaction = transactionsRepository.save(transactionToUpdate);
-                TransactionResponse response = TransactionResponse.toResponse(updatedTransaction);
+                Borrows updatedBorrow = borrowsRepository.save(borrowToUpdate);
+                BorrowResponse response = BorrowResponse.toResponse(updatedBorrow);
 
                 return new DataResponse<>(
                         TRANSACTION_UPDATED_SUCCESSFULLY,
@@ -325,7 +325,7 @@ public class TransactionServiceImpl implements TransactionService {
             }
 
         } catch (Exception e) {
-            log.error("Error updating transaction status: {}", e.getMessage());
+            log.error("Error updating borrow status: {}", e.getMessage());
             return new DataResponse<>(
                     MSG_INTERNAL_SERVER_ERROR,
                     LocalDateTime.now(),
@@ -338,10 +338,10 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public DataResponse<TransactionResponse> deleteTransactionById(Long transactionId) {
+    public DataResponse<BorrowResponse> deleteBorrowById(Long borrowId) {
         try {
-            Optional<Transactions> existingTransaction = transactionsRepository.findById(transactionId);
-            if (existingTransaction.isEmpty()) {
+            Optional<Borrows> existingBorrow = borrowsRepository.findById(borrowId);
+            if (existingBorrow.isEmpty()) {
                 return new DataResponse<>(
                         TRANSACTION_NOT_FOUND,
                         LocalDateTime.now(),
@@ -351,7 +351,7 @@ public class TransactionServiceImpl implements TransactionService {
                         null
                 );
             } else {
-                transactionsRepository.deleteById(transactionId);
+                borrowsRepository.deleteById(borrowId);
                 return new DataResponse<>(
                         TRANSACTION_DELETED_SUCCESSFULLY,
                         LocalDateTime.now(),
@@ -362,7 +362,7 @@ public class TransactionServiceImpl implements TransactionService {
                 );
             }
         } catch (Exception e) {
-            log.error("Error deleting transaction by ID: {}", e.getMessage());
+            log.error("Error deleting borrow by ID: {}", e.getMessage());
             return new DataResponse<>(
                     MSG_INTERNAL_SERVER_ERROR,
                     LocalDateTime.now(),
